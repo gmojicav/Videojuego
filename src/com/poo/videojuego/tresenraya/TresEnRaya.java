@@ -1,30 +1,34 @@
-package com.poo.videojuego;
+package com.poo.videojuego.tresenraya;
+
+import com.poo.videojuego.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
 
-public class Gato extends Juego
+public class TresEnRaya extends Juego
 {
-    private final JLabel ganadorTxt;
+    private final JLabel textoStatus;
     private final JButton[] botones = new JButton[9];
+    
+    private final String[] datos = new String[9];
     
     private final String LETRA_JUGADOR = "X";
     private final String LETRA_MAQUINA = "O";
     
     private boolean ganadorJugador = false;
     
-    public Gato(EventoJuego terminarJuego)
+    public TresEnRaya(EventoJuego terminarJuego)
     {
         // crear ventana del juego
-        super("Gato");
+        super("Tres en raya");
         // crear cuadricula 3x3 de botones
         JPanel panelBotones = new JPanel(new GridLayout(3, 3));
-        // crear texto de ganador
-        ganadorTxt = new JLabel();
-        ganadorTxt.setAlignmentX(CENTER_ALIGNMENT);
-        ganadorTxt.setVisible(false);
+        // crear texto de status de partida
+        textoStatus = new JLabel("", SwingConstants.CENTER);
+        textoStatus.setAlignmentX(CENTER_ALIGNMENT);
+        textoStatus.setPreferredSize(new Dimension(240, 20));
         // rellenar cuadricula de botones
         for (int i = 0; i < botones.length; i++)
         {
@@ -43,13 +47,14 @@ public class Gato extends Juego
         }
         // agregar cuadricula de botones y el texto de ganador a la ventana
         getContentPane().add(panelBotones, BorderLayout.CENTER);
-        getContentPane().add(ganadorTxt, BorderLayout.SOUTH);
+        getContentPane().add(textoStatus, BorderLayout.SOUTH);
         
         // asignar tamaño de ventana
-        setSize(240,240);
+        setSize(240,260);
         // hacer visible la ventana
         setVisible(true);
         
+        // inicia un nuevo juego
         nuevoJuego();
         
         // asignar evento de fin de juego
@@ -59,10 +64,13 @@ public class Gato extends Juego
     @Override
     protected final void nuevoJuego()
     {
-        for (int i = 0; i < botones.length; i++)
+        for (int i = 0; i < datos.length; i++)
         {
+            // guarda un valor vacio en una casilla del tablero
+            datos[i] = "";
+            // activa un boton y le asigna un icono por defecto
             botones[i].setEnabled(true);
-            botones[i].setText("");
+            botones[i].setIcon(crearIcono("assets/tresenraya/vacio.png"));
         }
         
         terminado = false;
@@ -77,17 +85,17 @@ public class Gato extends Juego
     public void terminar()
     {
         // desactivar todos los botones
-        for (int i = 0; i < botones.length; i++)
+        for (JButton boton : botones)
         {
-            botones[i].setEnabled(false);
+            boton.setEnabled(false);
         }
         // guardar estado del juego
         terminado = true;
         
-        // llamar metodo "terminar()" original
+        // si el jugador ganó, llamar método "terminar()" original
         if (ganadorJugador)
             super.terminar();
-        else
+        else // de lo contrario, reiniciar el juego
             nuevoJuego();
     }
     
@@ -99,16 +107,24 @@ public class Gato extends Juego
      */
     private void presionarBoton(JButton boton, String jugador)
     {
-        // desactivar boton y asignar la letra del jugador o maquina al boton
+        // guarda la letra presionada en la lista de datos basandose en el boton presionado
+        for (int i = 0; i < datos.length; i++)
+        {
+            if (botones[i] == boton)
+            {
+                datos[i] = jugador;
+            }
+        }
+        
+        // desactivar boton y asignar el icono del jugador o maquina al boton
         boton.setEnabled(false);
-        boton.setText(jugador);
+        boton.setIcon(crearIcono("assets/tresenraya/" + jugador +".png"));
         
         // si existe un tres en raya para el jugador o maquina,
         // el juego se considera ganado por el jugador o la maquina
         if (comprobarTresEnRaya(jugador))
         {
-            ganadorTxt.setVisible(true);
-            ganadorTxt.setText("La " + jugador + " gana");
+            textoStatus.setText("La " + jugador + " gana");
             
             ganadorJugador = jugador.equals(LETRA_JUGADOR);
             terminar();
@@ -117,8 +133,7 @@ public class Gato extends Juego
         // el juego se considera como empate y termina
         else if (comprobarBloqueo())
         {
-            ganadorTxt.setVisible(true);
-            ganadorTxt.setText("Empate");
+            textoStatus.setText("Empate");
             terminar();
         }
     }
@@ -156,11 +171,11 @@ public class Gato extends Juego
         int botonesDisponibles = 0;
         
         // buscar en todos los botones si existen algun boton sin presionar
-        for (int i = 0; i < botones.length; i++)
+        for (JButton boton : botones)
         {
-            if (botones[i].isEnabled())
+            if (boton.isEnabled())
             {
-               botonesDisponibles++;
+                botonesDisponibles++;
             }
         }
         // si no existen botones disponibles,
@@ -179,63 +194,77 @@ public class Gato extends Juego
         // XXX
         // ---
         // ---
-        if (botones[0].getText().equals(value)&& botones[1].getText().equals(value)
-                && botones[2].getText().equals(value))
+        if (datos[0].equals(value)&& datos[1].equals(value)
+                && datos[2].equals(value))
         {
             return true;
         }
         // ---
         // XXX
         // ---
-        else if (botones[3].getText().equals(value) && botones[4].getText().equals(value)
-                && botones[5].getText().equals(value))
+        else if (datos[3].equals(value) && datos[4].equals(value)
+                && datos[5].equals(value))
         {
            return true;
         }
         // ---
         // ---
         // XXX
-        else if (botones[6].getText().equals(value) && botones[7].getText().equals(value)
-                && botones[8].getText().equals(value))
+        else if (datos[6].equals(value) && datos[7].equals(value)
+                && datos[8].equals(value))
         {
            return true;
         }
         // X--
         // X--
         // X--
-        else if (botones[0].getText().equals(value) && botones[3].getText().equals(value)
-                && botones[6].getText().equals(value))
+        else if (datos[0].equals(value) && datos[3].equals(value)
+                && datos[6].equals(value))
         {
            return true;
         }
         // -X-
         // -X-
         // -X-
-        else if (botones[1].getText().equals(value) && botones[4].getText().equals(value)
-                && botones[7].getText().equals(value))
+        else if (datos[1].equals(value) && datos[4].equals(value)
+                && datos[7].equals(value))
         {
            return true;
         }
         // --X
         // --X
         // --X
-        else if (botones[2].getText().equals(value) && botones[5].getText().equals(value)
-                && botones[8].getText().equals(value))
+        else if (datos[2].equals(value) && datos[5].equals(value)
+                && datos[8].equals(value))
         {
            return true;
         }
         // X--
         // -X-
         // --X
-        else if (botones[0].getText().equals(value) && botones[4].getText().equals(value)
-                && botones[8].getText().equals(value))
+        else if (datos[0].equals(value) && datos[4].equals(value)
+                && datos[8].equals(value))
         {
            return true;
         }
         // --X
         // -X-
         // X--
-        else return botones[2].getText().equals(value) && botones[4].getText().equals(value)
-                && botones[6].getText().equals(value);
+        else return datos[2].equals(value) && datos[4].equals(value)
+                && datos[6].equals(value);
+    }
+    
+    /**
+     * Crea una imagen que se puede asignar a un boton
+     * @param ruta La ruta de acceso al archivo de imagen a usar
+     * @return La imagen creada a partir del archivo dado
+     */
+    private ImageIcon crearIcono(String ruta)
+    {
+        // crear imagen a partir del archivo dado
+        ImageIcon icono = new ImageIcon(ruta);
+        // reescalar la imagen para quedar con el tamaño de los botones
+        Image imagenIcono = icono.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+        return new ImageIcon(imagenIcono);
     }
 }

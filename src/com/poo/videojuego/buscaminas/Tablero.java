@@ -8,6 +8,8 @@ import java.util.Random;
 
 public class Tablero extends JPanel
 {
+    private final Buscaminas buscaminas;
+    
     private final int NUMERO_IMAGENES = 13;
     private final int TAMANO_CELDA = 15;
 
@@ -20,9 +22,9 @@ public class Tablero extends JPanel
     private final int CELDA_MINADA_CUBIERTA = ID_CELDA_MINADA + ID_CELDA_CUBIERTA;
     private final int CELDA_MINADA_MARCADA = CELDA_MINADA_CUBIERTA + ID_CELDA_CUBIERTA;
 
-    private final int TOTAL_MINAS = 10;
-    private final int TOTAL_FILAS = 8;
-    private final int TOTAL_COLUMNAS = 8;
+    private final int TOTAL_MINAS = 40;
+    private final int TOTAL_FILAS = 16;
+    private final int TOTAL_COLUMNAS = 16;
 
     private final int ANCHO = TOTAL_COLUMNAS * TAMANO_CELDA + 1;
     private final int ALTO = TOTAL_FILAS * TAMANO_CELDA + 1;
@@ -35,21 +37,27 @@ public class Tablero extends JPanel
     private int totalCeldas;
     private final JLabel barraEstado;
 
-    public Tablero(JLabel barraEstado)
+    public Tablero(Buscaminas buscaminas, JLabel barraEstado)
     {
+        // guardar la referencia a el juego y a la barra de estado
+        this.buscaminas = buscaminas;
         this.barraEstado = barraEstado;
-        
+        // asignar el tamaño objetivo del tablero
         setPreferredSize(new Dimension(ANCHO, ALTO));
 
+        // crear la lista de imagenes
         imagenes = new Image[NUMERO_IMAGENES];
 
+        // buscar y guardar los sprites del buscaminas
         for (int i = 0; i < NUMERO_IMAGENES; i++)
         {
             String path = "assets/buscaminas/" + i + ".png";
             imagenes[i] = (new ImageIcon(path)).getImage();
         }
 
-        addMouseListener(new MinesAdapter());
+        // crear y asignar el listener de clicks de raton para las casillas del tablero
+        addMouseListener(new MouseListener());
+        // iniciar un nuevo juego
         nuevoJuego();
     }
 
@@ -58,63 +66,66 @@ public class Tablero extends JPanel
      */
     private void nuevoJuego()
     {
-        int celda;
-
         Random random = new Random();
+        
         jugando = true;
+        // asumimos que al ser un nuevo juego, el numero de minas por encontrar es el mismo que de minas totales
         minasFaltantes = TOTAL_MINAS;
 
+        // calculamos la cantidad total de celdas
         totalCeldas = TOTAL_FILAS * TOTAL_COLUMNAS;
+        // creamos un nuevo arreglo de datos para el campo de minas
         campo = new int[totalCeldas];
-
+        // asignamos un valor de celda cubierta vacia a todas las posiciones del campo de minas
         for (int i = 0; i < totalCeldas; i++)
         {
             campo[i] = ID_CELDA_CUBIERTA;
         }
 
-        barraEstado.setText(Integer.toString(minasFaltantes));
+        // mostramos la cantidad de minas restantes/totales
+        barraEstado.setText("Minas restantes: " + Integer.toString(minasFaltantes));
 
+        // bucle para posicionar todas las minas
         int i = 0;
         while (i < TOTAL_MINAS)
         {
-            int position = (int) (totalCeldas * random.nextDouble());
+            // calcular posicion aleatoria para la mina
+            int posicion = (int)(totalCeldas * random.nextDouble());
+            
+            // el bucle se saltará la agregación de la mina si por alguna razon
+            // la posicion anterior esta fuera del tablero
+            // o si en la misma posición ya existe una mina en el campo
+            if (posicion >= totalCeldas || campo[posicion] == CELDA_MINADA_CUBIERTA)
+                continue;
+            
+            // obtenemos la columna en la que la mina se encontrará
+            int columnaActual = posicion % TOTAL_COLUMNAS;
+            // se coloca la mina en la posición
+            campo[posicion] = CELDA_MINADA_CUBIERTA;
+            i++;
 
-            if ((position < totalCeldas) && (campo[position] != CELDA_MINADA_CUBIERTA))
+            // el siguiente codigo se encarga de "avisar" a las casillas vecinas
+            // a la mina que hay una mina en sus alrededores
+            // (SE VIENE CODIGO REPETITIVO)
+            int celda;
+
+            // avisar a celdas vecinas del lado izquierdo-----------------------
+            // (esto solo aplica para minas no colocadas en el borde izquierdo del tablero)
+            if (columnaActual > 0)
             {
-                int columnaActual = position % TOTAL_COLUMNAS;
-                campo[position] = CELDA_MINADA_CUBIERTA;
-                i++;
-
-                if (columnaActual > 0)
+                // celda superior izquierda
+                celda = posicion - 1 - TOTAL_COLUMNAS;
+                if (celda >= 0) // solo aplica si la celda es mayor o igual a la 0
                 {
-                    celda = position - 1 - TOTAL_COLUMNAS;
-                    if (celda >= 0)
+                    // no hacer nada si la celda en cuestion contiene una mina
+                    if (campo[celda] != CELDA_MINADA_CUBIERTA)
                     {
-                        if (campo[celda] != CELDA_MINADA_CUBIERTA)
-                        {
-                            campo[celda] += 1;
-                        }
-                    }
-                    celda = position - 1;
-                    if (celda >= 0)
-                    {
-                        if (campo[celda] != CELDA_MINADA_CUBIERTA)
-                        {
-                            campo[celda] += 1;
-                        }
-                    }
-
-                    celda = position + TOTAL_COLUMNAS - 1;
-                    if (celda < totalCeldas)
-                    {
-                        if (campo[celda] != CELDA_MINADA_CUBIERTA)
-                        {
-                            campo[celda] += 1;
-                        }
+                        // aumentar la cantidad de minas detectadas por la celda en cuestion
+                        campo[celda] += 1;
                     }
                 }
-
-                celda = position - TOTAL_COLUMNAS;
+                // celda de la izquierda
+                celda = posicion - 1;
                 if (celda >= 0)
                 {
                     if (campo[celda] != CELDA_MINADA_CUBIERTA)
@@ -122,8 +133,54 @@ public class Tablero extends JPanel
                         campo[celda] += 1;
                     }
                 }
+                // celda inferior izquierda
+                celda = posicion + TOTAL_COLUMNAS - 1;
+                if (celda < totalCeldas) // solo aplica si la celda es menor a la cantidad total de celdas
+                {
+                    if (campo[celda] != CELDA_MINADA_CUBIERTA)
+                    {
+                        campo[celda] += 1;
+                    }
+                }
+            }
+            // -----------------------------------------------------------------
 
-                celda = position + TOTAL_COLUMNAS;
+            // avisar a celdas vecinas del lado superior e inferior-------------
+            // celda superior
+            celda = posicion - TOTAL_COLUMNAS;
+            if (celda >= 0)
+            {
+                if (campo[celda] != CELDA_MINADA_CUBIERTA)
+                {
+                    campo[celda] += 1;
+                }
+            }
+            // celda inferior
+            celda = posicion + TOTAL_COLUMNAS;
+            if (celda < totalCeldas)
+            {
+                if (campo[celda] != CELDA_MINADA_CUBIERTA)
+                {
+                    campo[celda] += 1;
+                }
+            }
+            // -----------------------------------------------------------------
+
+            // avisar a celdas vecinas del lado derecho-------------------------
+            // (esto solo aplica para minas no colocadas en el borde derecho del tablero)
+            if (columnaActual < (TOTAL_COLUMNAS - 1))
+            {
+                // celda superior derecha
+                celda = posicion - TOTAL_COLUMNAS + 1;
+                if (celda >= 0)
+                {
+                    if (campo[celda] != CELDA_MINADA_CUBIERTA)
+                    {
+                        campo[celda] += 1;
+                    }
+                }
+                // celda del lado derecho
+                celda = posicion + TOTAL_COLUMNAS + 1;
                 if (celda < totalCeldas)
                 {
                     if (campo[celda] != CELDA_MINADA_CUBIERTA)
@@ -131,38 +188,20 @@ public class Tablero extends JPanel
                         campo[celda] += 1;
                     }
                 }
-
-                if (columnaActual < (TOTAL_COLUMNAS - 1))
+                // celda inferior derecha
+                celda = posicion + 1;
+                if (celda < totalCeldas)
                 {
-                    celda = position - TOTAL_COLUMNAS + 1;
-                    if (celda >= 0)
+                    if (campo[celda] != CELDA_MINADA_CUBIERTA)
                     {
-                        if (campo[celda] != CELDA_MINADA_CUBIERTA)
-                        {
-                            campo[celda] += 1;
-                        }
-                    }
-                    celda = position + TOTAL_COLUMNAS + 1;
-                    if (celda < totalCeldas)
-                    {
-                        if (campo[celda] != CELDA_MINADA_CUBIERTA)
-                        {
-                            campo[celda] += 1;
-                        }
-                    }
-                    celda = position + 1;
-                    if (celda < totalCeldas)
-                    {
-                        if (campo[celda] != CELDA_MINADA_CUBIERTA)
-                        {
-                            campo[celda] += 1;
-                        }
+                        campo[celda] += 1;
                     }
                 }
             }
+            // -----------------------------------------------------------------
         }
     }
-
+    
     /**
      * Busca de forma concurrente las celdas vacias vecinas de la celda presionada
      * @param j 
@@ -337,6 +376,7 @@ public class Tablero extends JPanel
         {
             jugando = false;
             barraEstado.setText("Ganaste");
+            buscaminas.terminar();
         }
         else if (!jugando)
         {
@@ -344,7 +384,7 @@ public class Tablero extends JPanel
         }
     }
 
-    private class MinesAdapter extends MouseAdapter {
+    private class MouseListener extends MouseAdapter {
 
         @Override
         public void mousePressed(MouseEvent e)
