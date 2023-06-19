@@ -9,7 +9,6 @@ import java.util.*;
 
 public class TresEnRaya extends Juego
 {
-    private final JLabel textoStatus;
     private final JButton[] botones = new JButton[9];
     
     private final String[] datos = new String[9];
@@ -19,16 +18,12 @@ public class TresEnRaya extends Juego
     
     private boolean ganadorJugador = false;
     
-    public TresEnRaya(EventoJuego terminarJuego)
+    public TresEnRaya(Videojuego videojuego)
     {
-        // crear ventana del juego
-        super("Tres en raya");
+        super(videojuego);
         // crear cuadricula 3x3 de botones
         JPanel panelBotones = new JPanel(new GridLayout(3, 3));
         // crear texto de status de partida
-        textoStatus = new JLabel("", SwingConstants.CENTER);
-        textoStatus.setAlignmentX(CENTER_ALIGNMENT);
-        textoStatus.setPreferredSize(new Dimension(240, 20));
         // rellenar cuadricula de botones
         for (int i = 0; i < botones.length; i++)
         {
@@ -46,23 +41,12 @@ public class TresEnRaya extends Juego
             });
         }
         // agregar cuadricula de botones y el texto de ganador a la ventana
-        getContentPane().add(panelBotones, BorderLayout.CENTER);
-        getContentPane().add(textoStatus, BorderLayout.SOUTH);
-        
-        // asignar tamaño de ventana
-        setSize(240,260);
-        // hacer visible la ventana
-        setVisible(true);
-        
-        // inicia un nuevo juego
-        nuevoJuego();
-        
-        // asignar evento de fin de juego
-        this.juegoTerminado = terminarJuego;
+        add(panelBotones, BorderLayout.CENTER);
+        //add(textoStatus, BorderLayout.SOUTH);
     }
     
     @Override
-    protected final void nuevoJuego()
+    public final void nuevoJuego()
     {
         for (int i = 0; i < datos.length; i++)
         {
@@ -124,7 +108,7 @@ public class TresEnRaya extends Juego
         // el juego se considera ganado por el jugador o la maquina
         if (comprobarTresEnRaya(jugador))
         {
-            textoStatus.setText("La " + jugador + " gana");
+            videojuego.notificar(("La " + jugador + " gana"));
             
             ganadorJugador = jugador.equals(LETRA_JUGADOR);
             terminar();
@@ -133,7 +117,7 @@ public class TresEnRaya extends Juego
         // el juego se considera como empate y termina
         else if (comprobarBloqueo())
         {
-            textoStatus.setText("Empate");
+            videojuego.notificar("Empate");
             terminar();
         }
     }
@@ -264,7 +248,7 @@ public class TresEnRaya extends Juego
         // crear imagen a partir del archivo dado
         ImageIcon icono = new ImageIcon(ruta);
         // reescalar la imagen para quedar con el tamaño de los botones
-        Image imagenIcono = icono.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+        Image imagenIcono = icono.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         return new ImageIcon(imagenIcono);
     }
 }

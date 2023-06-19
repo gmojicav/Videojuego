@@ -6,37 +6,29 @@ import javax.swing.*;
 import java.io.*;
 import javax.imageio.*;
 import java.net.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class JuegoPrueba extends Juego
 {
-    public JuegoPrueba() throws IOException
+    public JuegoPrueba(Videojuego videojuego)
     {
-        super("Prueba");
-        URL treeUrl = new URL("https://i.pinimg.com/originals/83/3f/3c/833f3c4931a09a2bc7125c37a94de273.jpg");
-        BufferedImage myPicture = ImageIO.read(treeUrl);
-        JLabel picLabel = new JLabel(new ImageIcon(myPicture));
-        picLabel.setPreferredSize(new Dimension(140, 140));
-        getContentPane().add(picLabel, BorderLayout.WEST);
-        createTicTacToe();
+        super(videojuego);
         
-        setSize(800,600);
-        setLocation(
-                (GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth() / 2) - (getWidth() / 2), 
-                (GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight() / 2) - (getHeight() / 2));
-        setVisible(true);
-    }
-    
-    private void createTicTacToe()
-    {
-        JPanel tictactoePanel = new JPanel(new BorderLayout());
-        JButton[] botones = new JButton[9];
-        JPanel panelBotones = new JPanel(new GridLayout(3, 3));
-        for (int i = 0; i < botones.length; i++){
-            botones[i] = new JButton();
-            botones[i].setPreferredSize(new Dimension(80, 80));
-            panelBotones.add(botones[i]);
+        try {
+            URL treeUrl = new URL("https://i.pinimg.com/originals/83/3f/3c/833f3c4931a09a2bc7125c37a94de273.jpg");
+            BufferedImage myPicture = ImageIO.read(treeUrl);
+            JLabel picLabel = new JLabel(new ImageIcon(myPicture));
+            picLabel.setPreferredSize(new Dimension(140, 140));
+            add(picLabel, BorderLayout.WEST);
+            
+            setSize(800,600);
+            setLocation(
+                    (GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth() / 2) - (getWidth() / 2),
+                    (GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight() / 2) - (getHeight() / 2));
+            setVisible(true);
+        } catch (HeadlessException | IOException ex) {
+            Logger.getLogger(JuegoPrueba.class.getName()).log(Level.SEVERE, null, ex);
         }
-        tictactoePanel.add(panelBotones, BorderLayout.CENTER);
-        getContentPane().add(tictactoePanel, BorderLayout.CENTER);
     }
 }

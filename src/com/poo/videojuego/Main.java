@@ -1,26 +1,40 @@
 package com.poo.videojuego;
 
 import com.poo.videojuego.tresenraya.TresEnRaya;
-import com.poo.videojuego.buscaminas.Buscaminas;
+import com.poo.videojuego.buscaminas.*;
 import com.poo.videojuego.ahorcado.Ahorcado;
+
+import javax.swing.ImageIcon;
 
 public class Main
 {
     public static void main(String[] args)
     {
-        // crear juego TresEnRaya primero
-        TresEnRaya tresenraya = new TresEnRaya(() ->
+        // crear ventana de juego
+        Videojuego videojuego = new Videojuego();
+        
+        // crear minijuegos
+        TresEnRaya tresEnRaya = new TresEnRaya(videojuego);
+        Ahorcado ahorcado = new Ahorcado(videojuego);
+        Buscaminas buscaminas = new Buscaminas(videojuego);
+        
+        // configurar las acciones ejecutadas al terminar cada juego
+        tresEnRaya.guardarEventos(()->
         {
-            // crear juego Buscaminas al terminar TresEnRaya
-            Buscaminas buscaminas = new Buscaminas(()->
-            {
-                // ---[ "A H O R C A D O"   E S   U N   P R O T O T I P O ]---
-                // crear juego Ahorcado al terminar Buscaminas
-                Ahorcado ahorcado = new Ahorcado(()->
-                {
-                    javax.swing.JOptionPane.showMessageDialog(null, "La aventura de Adrian ha terminado");
-                });
-            });
+            videojuego.jugar(ahorcado, new ImageIcon("assets/personajes/tomi.png"));
         });
+        ahorcado.guardarEventos(()-> 
+        {
+            videojuego.jugar(buscaminas, new ImageIcon("assets/personajes/vicente.png"));
+        });
+        buscaminas.guardarEventos(()-> 
+        {
+            //videojuego.jugar(ahorcado, new ImageIcon("assets/tresenraya/o.png"));
+            javax.swing.JOptionPane.showMessageDialog(videojuego, "La aventura de Adrian ha terminado");
+            videojuego.dispose();
+        });
+        
+        // iniciar con el primer juego
+        videojuego.jugar(tresEnRaya, new ImageIcon("assets/personajes/gato.png"));
     }
 }

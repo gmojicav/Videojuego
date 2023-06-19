@@ -3,6 +3,7 @@ package com.poo.videojuego.ahorcado;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.text.*;
 
 import java.io.*;
 import java.nio.charset.*;
@@ -15,138 +16,147 @@ import com.poo.videojuego.*;
 
 public class Ahorcado extends Juego
 {
-    private final JLabel textoTitulo;
-    private final JTextArea registroPalabras;
-
-    private final JPanel panelInferior;
-    private final JLabel etiquetaIngresaLetra;
+    private final JLabel ahorcado;
+    
+    private final JLabel palabraOculta;
+    
+    private final JPanel panelEntradaTexto;
     private final JTextField entradaLetra;
     private final JButton botonIngresarLetra;
 
     private String palabra;
-    private int tamanyoPalabra;
-    private char[] palabraAdivinada = new char[50];
-    private int tamanyoPalabraAdivinada;
+    private String palabraAdivinada;
+    //private char[] palabraAdivinada = new char[50];
+    //private int tamanyoPalabraAdivinada;
     private int intentosRestantes;
-    private char letra;
+    //private char letra;
     
-    public Ahorcado(EventoJuego terminarJuego)
+    private final int INTENTOS_MAXIMOS = 5;
+    // advertencia: las palabras en el archivo "palabras.txt" nunca deberian incluir este caracter
+    private final String CARACTER_VACIO = "~";
+    
+    public Ahorcado(Videojuego videojuego)
     {
-        super("Ahorcado");
+        super(videojuego);
         
-        textoTitulo = new JLabel("Ahorcado [Prototipo]",JLabel.CENTER);
-        textoTitulo.setFont(new Font("Arial",Font.BOLD,40));
+        setLayout(new GridBagLayout());
         
-        registroPalabras = new JTextArea();
-        registroPalabras.setFont(new Font("Arial",Font.BOLD,20));
-        registroPalabras.setEditable(false);
+        ahorcado = new JLabel();
+        ahorcado.setPreferredSize(new Dimension(200, 200));
+        ahorcado.setHorizontalAlignment(JTextField.CENTER);
+        GridBagConstraints ahorcadoContraints = new GridBagConstraints();
+        ahorcadoContraints.gridx = 0;
+        ahorcadoContraints.gridy = 0;
         
-        etiquetaIngresaLetra = new JLabel("Ingresa una letra");
-        etiquetaIngresaLetra.setFont(new Font("Arial",Font.PLAIN,20));
+        palabraOculta = new JLabel();
+        palabraOculta.setPreferredSize(new Dimension(300, 20));
+        palabraOculta.setHorizontalAlignment(JTextField.CENTER);
+        GridBagConstraints palabraOcultaContraints = new GridBagConstraints();
+        palabraOcultaContraints.gridx = 0;
+        palabraOcultaContraints.gridy = 1;
+        palabraOcultaContraints.fill = GridBagConstraints.HORIZONTAL;
         
-        entradaLetra = new JTextField(10);
-        entradaLetra.setFont(new Font("Arial",Font.PLAIN,20));
+        panelEntradaTexto = new JPanel(new GridBagLayout());
+        GridBagConstraints panelEntradaTextoContraints = new GridBagConstraints();
+        panelEntradaTextoContraints.gridx = 0;
+        panelEntradaTextoContraints.gridy = 2;
+        panelEntradaTextoContraints.weighty = 1.1;
         
-        botonIngresarLetra = new JButton("Probar");
-        botonIngresarLetra.setFont(new Font("Arial",Font.PLAIN,20));
+        entradaLetra = new JTextField();
+        entradaLetra.setPreferredSize(new Dimension(20, 20));
+        entradaLetra.setHorizontalAlignment(JTextField.CENTER);
+        PlainDocument documentoEntradaLetra = new PlainDocument();
+        DocumentFilter filtroEntradaLetra = new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String text, AttributeSet attrs) throws BadLocationException
+            {
+                if (fb.getDocument().getLength() + text.length() <= 1) {
+                    super.insertString(fb, offset, text, attrs);
+                }
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException
+            {
+                if (fb.getDocument().getLength() + text.length() - length <= 1) {
+                    super.replace(fb, offset, length, text, attrs);
+                }
+            }
+        };
+        documentoEntradaLetra.setDocumentFilter(filtroEntradaLetra);
+        entradaLetra.setDocument(documentoEntradaLetra);
+        GridBagConstraints entradaLetraContraints = new GridBagConstraints();
+        entradaLetraContraints.gridx = 0;
+        entradaLetraContraints.gridy = 0;
+        
+        botonIngresarLetra = new JButton();
         botonIngresarLetra.addActionListener((ActionEvent evento) ->
         {
-            letra = entradaLetra.getText().charAt(0);
-            int pos = palabra.indexOf(letra);
-            entradaLetra.setText("");
-
-            if(pos >= 0)
-            {
-                palabraAdivinada = agregarLetra();
-                mostrarPalabraAdivinada();
-            }
+            if (intentosRestantes > 0)
+                probarLetra();
             else
-            {
-                registroPalabras.append("\n\"" + letra + "\" no esta en la palabra\nPierdes un intento");
-                intentosRestantes -= 1;
-                mostrarPalabraAdivinada();
-            }
-
-            if(tamanyoPalabraAdivinada == tamanyoPalabra)
-            {
-                registroPalabras.append("\nFelicidades! Adivinaste la palabra\n" + palabra);
-                terminar();
-            }
-
-            if(intentosRestantes == 0)
-            {
-                registroPalabras.append("\nOops!!! Perdiste");
                 nuevoJuego();
-            }
-            
-            registroPalabras.setCaretPosition(registroPalabras.getDocument().getLength() - 1);
         });
+        GridBagConstraints botonIngresarLetraContraints = new GridBagConstraints();
+        botonIngresarLetraContraints.gridx = 1;
+        botonIngresarLetraContraints.gridy = 0;
         
-        panelInferior = new JPanel();
-        panelInferior.add(etiquetaIngresaLetra);
-        panelInferior.add(entradaLetra);
-        panelInferior.add(botonIngresarLetra);
+        panelEntradaTexto.add(entradaLetra, entradaLetraContraints);
+        panelEntradaTexto.add(botonIngresarLetra, botonIngresarLetraContraints);
         
-        JPanel cpanel = new JPanel();
-        cpanel.setLayout(new BorderLayout(0,0));
-        cpanel.add(registroPalabras,BorderLayout.CENTER);
-        JScrollPane scrollPane = new JScrollPane(
-            registroPalabras,
-            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        cpanel.add(scrollPane);
-
-        add(textoTitulo, BorderLayout.NORTH);
-        add(cpanel, BorderLayout.CENTER);
-        add(panelInferior, BorderLayout.SOUTH);
-        
-        setSize(800,500);
-        setLocationRelativeTo(null);
-        setVisible(true);
-        
-        nuevoJuego();
-        
-        // asignar evento de fin de juego
-        this.juegoTerminado = terminarJuego;
+        add(ahorcado, ahorcadoContraints);
+        add(palabraOculta, palabraOcultaContraints);
+        add(panelEntradaTexto, panelEntradaTextoContraints);
     }
     
     @Override
-    protected final void nuevoJuego()
+    public final void nuevoJuego()
     {
-        intentosRestantes = 5;
-        tamanyoPalabraAdivinada = 0;
+        setBackground(Color.WHITE);
+        
+        intentosRestantes = INTENTOS_MAXIMOS;
         
         palabra = elegirPalabra();
-        registroPalabras.setText("");
-        registroPalabras.append("Intenta adivinar la palabra\nIntentos restantes: " + intentosRestantes + "\n");
+        palabraAdivinada = new String();
+        videojuego.notificar("Intentos restantes: " + intentosRestantes);
+        actualizarAhorcado();
         
-        for(int i = 0; i < tamanyoPalabra; i++)
+        for(int i = 0; i < palabra.length(); i++)
         {
-            registroPalabras.append("_ ");
-            palabraAdivinada[i] = '_';
+            palabraAdivinada = palabraAdivinada.concat(CARACTER_VACIO);
         }
-
-        registroPalabras.append("\nIngresa una letra...");
-
-//        if(intentosRestantes > 0 && tamanyoPalabraAdivinada < tamanyoPalabra)
-//        {
-//            probarLetra();
-//        }
-
-        setVisible(true);
+        
+        reconstruirPalabraOculta();
+        botonIngresarLetra.setText("Probar");
+        
+        terminado = false;
+    }
+    
+    private void reconstruirPalabraOculta()
+    {
+        palabraOculta.setText("");
+        
+        for(int i = 0; i < palabra.length(); i++)
+        {
+            if (palabraAdivinada.charAt(i) == CARACTER_VACIO.charAt(0))
+                palabraOculta.setText(palabraOculta.getText().concat("_ "));
+            else
+            {
+                palabraOculta.setText(
+                        palabraOculta.getText().concat(new String(new char[]{palabraAdivinada.charAt(i)})));
+            }
+        }
     }
     
     private String elegirPalabra()
     {
         try
         {
-            List<String> palabras = 
-                    Files.readAllLines(Paths.get("assets/ahorcado/palabras.txt"), Charset.defaultCharset());
+            List<String> palabras = Files.readAllLines(Paths.get("assets/ahorcado/palabras.txt"));
             Random random = new Random(System.currentTimeMillis());
             String palabraElegida = palabras.get(random.nextInt(palabras.size()));
-            palabraElegida = palabraElegida.toLowerCase();
-            tamanyoPalabra = palabraElegida.length();
-            System.out.print(palabraElegida);
+            palabraElegida = palabraElegida.toUpperCase();
+            System.out.println(palabraElegida);
             
             return palabraElegida;
         }
@@ -158,44 +168,76 @@ public class Ahorcado extends Juego
     
     private void probarLetra()
     {
+        // parar aqui si no hay texto en el campo de entrada o si se intentó ingresar un caracter invalido
+        if (entradaLetra.getText().isBlank() || entradaLetra.getText().contains(CARACTER_VACIO))
+            return;
         
+        // obtener la primera (y unica) letra del campo de entrada
+        char letra = entradaLetra.getText().toUpperCase().charAt(0);
+        // intenta encontrar la letra en la palabra
+        int posicionLetra = palabra.indexOf(letra);
+        
+        entradaLetra.setText("");
+        
+        // si la letra no existe en la palabra...
+        if (posicionLetra == -1)
+        {
+            // se notifica al jugador
+            videojuego.notificar("\"" + letra + "\" no esta en la palabra");
+            // se quita un intento
+            intentosRestantes -= 1;
+            // se actualiza el estado del ahorcado
+            actualizarAhorcado();
+        }
+        else // de lo contrario...
+        {
+            // se agrega la letra en la palabra
+            agregarLetra(letra);
+        }
+        
+        // si la palabra adivinada coincide con la palabra, el juego termina
+        if (palabra.equals(palabraAdivinada))
+        {
+            videojuego.notificar("Adivinaste la palabra!");
+            terminar();
+        }
+        
+        // si los intentos se han acabado, el juego vuelve a empezar
+        if(intentosRestantes == 0)
+        {
+            videojuego.notificar("Perdiste");
+            botonIngresarLetra.setText("Volver a intentar");
+        }
     }
     
-    private char[] agregarLetra()
+    private void agregarLetra(char letra)
     {
-        char[] secretWord = new char[tamanyoPalabra];
-        for(int i = 0; i < tamanyoPalabra; i++)
+        if (palabraAdivinada.contains(new String(new char[]{letra})))
         {
-            secretWord[i] = palabra.charAt(i);
+            videojuego.notificar("\"" + letra + "\" ya fue adivinada");
+            return;
         }
         
-        int elem = palabra.indexOf(letra);
-        if( letra == palabraAdivinada[elem])
+        char[] pa = palabraAdivinada.toCharArray();
+        
+        for (int i = 0; i < palabra.length(); i++)
         {
-            registroPalabras.append("\nLa letra ya se encuentra en la palabra\nPrueba una letra diferente");
-        }
-        else
-        {
-            registroPalabras.append("\n\"" + letra + "\" está en la palabra");
-            for(int i = elem; i < tamanyoPalabra; i++)
+            if (palabra.charAt(i) == letra)
             {
-                if(secretWord[i] == letra)
-                {
-                    palabraAdivinada[i] = letra;
-                    tamanyoPalabraAdivinada += 1;
-                }
+                pa[i] = letra;
             }
         }
-        return palabraAdivinada;
+        
+        palabraAdivinada = new String(pa);
+        reconstruirPalabraOculta();
     }
     
-    private void mostrarPalabraAdivinada()
+    private void actualizarAhorcado()
     {
-        registroPalabras.append("\n");
-        for(int i = 0; i < tamanyoPalabra; i++)
-        {
-            registroPalabras.append(palabraAdivinada[i] + " ");
-        }
-        registroPalabras.append("\nIntentos restantes: " + intentosRestantes);
+        // crear imagen a partir del archivo dado
+        ImageIcon icono = new ImageIcon("assets/ahorcado/" + intentosRestantes + ".png");
+        // reescalar la imagen para quedar con el tamaño de los botones
+        Image imagenIcono = icono.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+        ahorcado.setIcon(new ImageIcon(imagenIcono));
     }
 }
