@@ -92,10 +92,7 @@ public class Ahorcado extends Juego
         botonIngresarLetra = new JButton();
         botonIngresarLetra.addActionListener((ActionEvent evento) ->
         {
-            if (intentosRestantes > 0)
-                probarLetra();
-            else
-                nuevoJuego();
+            probar();
         });
         GridBagConstraints botonIngresarLetraContraints = new GridBagConstraints();
         botonIngresarLetraContraints.gridx = 1;
@@ -118,7 +115,7 @@ public class Ahorcado extends Juego
         
         palabra = elegirPalabra();
         palabraAdivinada = new String();
-        videojuego.notificar("Intentos restantes: " + intentosRestantes);
+        videojuego.notificar("Ahorcado");
         actualizarAhorcado();
         
         for(int i = 0; i < palabra.length(); i++)
@@ -166,10 +163,18 @@ public class Ahorcado extends Juego
         }
     }
     
+    private void probar()
+    {
+        if (intentosRestantes > 0)
+            probarLetra();
+        else
+            nuevoJuego();
+    }
+    
     private void probarLetra()
     {
         // parar aqui si no hay texto en el campo de entrada o si se intentó ingresar un caracter invalido
-        if (entradaLetra.getText().isBlank() || entradaLetra.getText().contains(CARACTER_VACIO))
+        if (entradaLetra.getText().isEmpty() || entradaLetra.getText().contains(CARACTER_VACIO))
             return;
         
         // obtener la primera (y unica) letra del campo de entrada
@@ -230,6 +235,8 @@ public class Ahorcado extends Juego
         
         palabraAdivinada = new String(pa);
         reconstruirPalabraOculta();
+        
+        videojuego.notificar("");
     }
     
     private void actualizarAhorcado()
