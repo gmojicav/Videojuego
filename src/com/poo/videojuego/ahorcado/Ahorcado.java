@@ -6,7 +6,6 @@ import javax.swing.*;
 import javax.swing.text.*;
 
 import java.io.*;
-import java.nio.charset.*;
 import java.nio.file.*;
 
 import java.util.*;
@@ -173,9 +172,16 @@ public class Ahorcado extends Juego
     
     private void probarLetra()
     {
-        // parar aqui si no hay texto en el campo de entrada o si se intentó ingresar un caracter invalido
-        if (entradaLetra.getText().isEmpty() || entradaLetra.getText().contains(CARACTER_VACIO))
+        // parar aqui si no hay texto en el campo de entrada
+        // o si se intentó ingresar un caracter invalido
+        if (entradaLetra.getText().isEmpty()
+                || entradaLetra.getText().equals(" ")
+                || entradaLetra.getText().contains(CARACTER_VACIO))
+        {
+            videojuego.notificar("No puedes ingresar espacios ni \"" + CARACTER_VACIO + "\"");
+            entradaLetra.setText("");
             return;
+        }
         
         // obtener la primera (y unica) letra del campo de entrada
         char letra = entradaLetra.getText().toUpperCase().charAt(0);

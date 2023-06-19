@@ -77,8 +77,7 @@ public class Videojuego extends JFrame
     {
         if (juegoActual != null)
         {
-            juegoActual.cerrar();
-            getContentPane().remove(panelJuego);
+            cerrarPanelJuego();
         }
         
         panelJuego = juegoActual = nuevoJuego;
@@ -94,11 +93,23 @@ public class Videojuego extends JFrame
         
         nuevoJuego.nuevoJuego();
         
+        mostrarEnemigo(enemigo);
+        
+        setVisible(true);
+        this.requestFocus();
+    }
+    
+    public void cerrarPanelJuego()
+    {
+        juegoActual.cerrar();
+        fondo.remove(panelJuego);
+    }
+    
+    public void mostrarEnemigo(ImageIcon enemigo)
+    {
         ImageIcon iconoEnemigo = enemigo;
         Image imagenIconoEnemigo = iconoEnemigo.getImage().getScaledInstance(400, 400, Image.SCALE_SMOOTH);
         imagenEnemigo.setIcon(new ImageIcon(imagenIconoEnemigo));
-        
-        setVisible(true);
     }
     
     public void notificar(String texto)
