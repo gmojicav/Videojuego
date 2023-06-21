@@ -13,8 +13,8 @@ public class TresEnRaya extends Juego
     
     private final String[] datos = new String[9];
     
-    private final String LETRA_JUGADOR = "X";
-    private final String LETRA_MAQUINA = "O";
+    private final String LETRA_JUGADOR = "arbol";
+    private final String LETRA_MAQUINA = "gato";
     
     private boolean ganadorJugador = false;
     
@@ -110,7 +110,7 @@ public class TresEnRaya extends Juego
         // el juego se considera ganado por el jugador o la maquina
         if (comprobarTresEnRaya(jugador))
         {
-            videojuego.notificar(("La " + jugador + " gana"));
+            videojuego.notificar(("El " + jugador + " gana"));
             
             ganadorJugador = jugador.equals(LETRA_JUGADOR);
             terminar();

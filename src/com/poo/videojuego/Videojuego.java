@@ -29,7 +29,7 @@ public class Videojuego extends JFrame
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 // Dibujar la imagen de fondo
-                Image imagenFondo = new ImageIcon("assets/bosque.png").getImage();
+                Image imagenFondo = new ImageIcon("assets/fondos/bosque.png").getImage();
                 g.drawImage(imagenFondo, 0, 0, getWidth(), getHeight(), this);
             }
         };
