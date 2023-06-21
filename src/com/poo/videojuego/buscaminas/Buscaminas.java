@@ -22,7 +22,7 @@ public class Buscaminas extends Juego
     private final int CELDA_MINADA_CUBIERTA = ID_CELDA_MINADA + ID_CELDA_CUBIERTA;
     private final int CELDA_MINADA_MARCADA = CELDA_MINADA_CUBIERTA + ID_CELDA_CUBIERTA;
 
-    private final int TOTAL_MINAS = 4;
+    private final int TOTAL_MINAS = 40;
     private final int TOTAL_FILAS = 20;
     private final int TOTAL_COLUMNAS = 20;
 
@@ -373,11 +373,15 @@ public class Buscaminas extends Juego
         {
             terminado = true;
             videojuego.notificar("Ganaste");
+            // se darán 2000 puntos en total al ganar,
+            // ya que por defecto siempre se dan 1000 puntos
+            videojuego.subirPuntuacion(1000);
             terminar();
         }
         else if (terminado)
         {
             videojuego.notificar("Perdiste");
+            videojuego.bajarPuntuacion(200);
         }
     }
     
