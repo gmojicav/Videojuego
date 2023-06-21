@@ -38,6 +38,7 @@ public abstract class Juego extends JPanel
      */
     public void terminar()
     {
+        videojuego.subirPuntuacion(1000);
         juegoTerminado.ejecutar();
     }
     

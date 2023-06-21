@@ -80,7 +80,9 @@ public class TresEnRaya extends Juego
         if (ganadorJugador)
             super.terminar();
         else // de lo contrario, reiniciar el juego
+        {
             nuevoJuego();
+        }
     }
     
     /**
@@ -123,26 +125,171 @@ public class TresEnRaya extends Juego
     }
     
     /**
-     * Elije aleatoriamente un boton para que el jugador maquina lo presione
+     * Elige una celda para que el jugador de la máquina realice su turno,
+     * tratando de hacer un tres en raya si es posible.
      */
     private void turnoMaquina()
     {
-        // si el juego ya ha terminado, la maquina no jugará
+        // si el juego ya ha terminado, la máquina no jugará
         if (terminado)
             return;
-        
-        // escoger boton aleatorio para el turno de la maquina
-        Random random = new Random();
-        int botonPresionado = random.nextInt(botones.length);
-        // si el boton escogido ya está presionado,
-        // se escogerá un boton nuevo hasta que se encuentre uno disponible
-        while(!botones[botonPresionado].isEnabled())
+
+        // berificar si hay una celda donde la máquina pueda hacer un tres en raya
+        int celdaGanadora = buscarCeldaGanadora(LETRA_MAQUINA);
+        if (celdaGanadora != -1)
         {
-            botonPresionado = random.nextInt(botones.length);
+            // si se encontró una celda ganadora, presionarla
+            presionarBoton(botones[celdaGanadora], LETRA_MAQUINA);
         }
+        else
+        {
+            // si no se encontró una celda ganadora,
+            // escoger boton aleatorio para el turno de la maquina
+            Random random = new Random();
+            int botonPresionado = random.nextInt(botones.length);
+            // si el boton escogido ya está presionado,
+            // se escogerá un boton nuevo hasta que se encuentre uno disponible
+            while(!botones[botonPresionado].isEnabled())
+            {
+                botonPresionado = random.nextInt(botones.length);
+            }
+
+            // presionar el boton escogido como la maquina
+            presionarBoton(botones[botonPresionado], LETRA_MAQUINA);
+        }
+    }
+    
+    /**
+    * Busca una celda donde el jugador especificado pueda hacer un tres en raya.
+    * @param jugador El jugador a comprobar si puede hacer un tres en raya.
+    * @return El índice de la celda donde el jugador puede hacer un tres en raya, o -1 si no hay ninguna.
+    */
+    private int buscarCeldaGanadora(String jugador)
+    {
+        // Comprobar filas
+        for (int fila = 0; fila < 3; fila++)
+        {
+            int celda1 = fila * 3;
+            int celda2 = celda1 + 1;
+            int celda3 = celda2 + 1;
+
+            // **!
+            if (datos[celda1].equals(jugador)
+                    && datos[celda2].equals(jugador)
+                    && datos[celda3].isEmpty())
+            {
+                return celda3;
+            }
+            // *!*
+            if (datos[celda1].equals(jugador)
+                    && datos[celda3].equals(jugador)
+                    && datos[celda2].isEmpty())
+            {
+                return celda2;
+            }
+            // !**
+            if (datos[celda2].equals(jugador)
+                    && datos[celda3].equals(jugador)
+                    && datos[celda1].isEmpty())
+            {
+                return celda1;
+            }
+        }
+
+        // Comprobar columnas
+        for (int columna = 0; columna < 3; columna++)
+        {
+            int celda1 = columna;
+            int celda2 = celda1 + 3;
+            int celda3 = celda2 + 3;
+
+            // *
+            // *
+            // !
+            if (datos[celda1].equals(jugador)
+                    && datos[celda2].equals(jugador)
+                    && datos[celda3].isEmpty())
+            {
+                return celda3;
+            }
+            // *
+            // !
+            // *
+            if (datos[celda1].equals(jugador)
+                    && datos[celda3].equals(jugador)
+                    && datos[celda2].isEmpty())
+            {
+                return celda2;
+            }
+            // !
+            // *
+            // *
+            if (datos[celda2].equals(jugador)
+                    && datos[celda3].equals(jugador)
+                    && datos[celda1].isEmpty())
+            {
+                return celda1;
+            }
+        }
+
+        // Comprobar diagonales
         
-        // presionar el boton escogido como la maquina
-        presionarBoton(botones[botonPresionado], LETRA_MAQUINA);
+        // *--
+        // -*-
+        // --!
+        if (datos[0].equals(jugador)
+                && datos[4].equals(jugador)
+                && datos[8].isEmpty())
+        {
+            return 8;
+        }
+        // *--
+        // -!-
+        // --*
+        if (datos[0].equals(jugador)
+                && datos[8].equals(jugador)
+                && datos[4].isEmpty())
+        {
+            return 4;
+        }
+        // !--
+        // -*-
+        // --*
+        if (datos[4].equals(jugador)
+                && datos[8].equals(jugador)
+                && datos[0].isEmpty())
+        {
+            return 0;
+        }
+        // --*
+        // -*-
+        // !--
+        if (datos[2].equals(jugador)
+                && datos[4].equals(jugador)
+                && datos[6].isEmpty())
+        {
+            return 6;
+        }
+        // --*
+        // -!-
+        // *--
+        if (datos[2].equals(jugador)
+                && datos[6].equals(jugador)
+                && datos[4].isEmpty())
+        {
+            return 4;
+        }
+        // --!
+        // -*-
+        // *--
+        if (datos[4].equals(jugador)
+                && datos[6].equals(jugador)
+                && datos[2].isEmpty())
+        {
+            return 2;
+        }
+
+        return -1; // No se encontró una celda ganadora
     }
     
     /**

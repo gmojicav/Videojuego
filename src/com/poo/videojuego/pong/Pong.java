@@ -34,7 +34,6 @@ public class Pong extends Juego implements ActionListener
         jugador1 = new Raqueta(1);
         jugador2 = new Raqueta(2);
         timer.stop();
-        timer.start();
         
         terminado = false;
     }
@@ -75,10 +74,14 @@ public class Pong extends Juego implements ActionListener
         if (pelota.ubicarHorizontalmente() < 30)
         {
             nuevoJuego();
+            videojuego.bajarPuntuacion(100);
         }
         // si la pelota cae del lado el jugador 2, el juego termina
         if (pelota.ubicarHorizontalmente() > 270)
         {
+            // se darán 2500 puntos en total al ganar,
+            // ya que por defecto siempre se dan 1000 puntos
+            videojuego.subirPuntuacion(1500);
             terminar();
         }
     }
@@ -106,6 +109,11 @@ public class Pong extends Juego implements ActionListener
         @Override
         public void keyPressed(KeyEvent e)
         {
+            // si el juego no está actualizandose, 
+            // lo empezará a hacer al presionar cualquier tecla
+            if (!timer.isRunning())
+                timer.start();
+            
             // jugador 1
             if (e.getKeyCode() == KeyEvent.VK_W)
             {

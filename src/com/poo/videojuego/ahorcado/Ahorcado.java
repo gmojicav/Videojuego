@@ -197,6 +197,8 @@ public class Ahorcado extends Juego
             videojuego.notificar("\"" + letra + "\" no esta en la palabra");
             // se quita un intento
             intentosRestantes -= 1;
+            // se quitan 10 puntos al jugador
+            videojuego.bajarPuntuacion(10);
             // se actualiza el estado del ahorcado
             actualizarAhorcado();
         }
@@ -216,6 +218,7 @@ public class Ahorcado extends Juego
         // si los intentos se han acabado, el juego vuelve a empezar
         if(intentosRestantes == 0)
         {
+            videojuego.bajarPuntuacion(100);
             videojuego.notificar("Perdiste");
             botonIngresarLetra.setText("Volver a intentar");
         }

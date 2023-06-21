@@ -370,11 +370,15 @@ public class Buscaminas extends Juego
         {
             terminado = true;
             videojuego.notificar("Ganaste");
+            // se darán 2000 puntos en total al ganar,
+            // ya que por defecto siempre se dan 1000 puntos
+            videojuego.subirPuntuacion(1000);
             terminar();
         }
         else if (terminado)
         {
             videojuego.notificar("Perdiste");
+            videojuego.bajarPuntuacion(200);
         }
     }
 
