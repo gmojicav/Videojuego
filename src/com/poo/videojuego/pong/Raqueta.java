@@ -51,7 +51,7 @@ public class Raqueta
     
     public void moverIA(Pelota pelota)
     {
-        y = pelota.ubicarVerticalmente() - rand.nextInt(-20, 100);
+        y = pelota.ubicarVerticalmente() - rand.nextInt(100);
     }
     
     public int ubicar()

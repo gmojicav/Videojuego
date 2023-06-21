@@ -22,7 +22,7 @@ public class Buscaminas extends Juego
     private final int CELDA_MINADA_CUBIERTA = ID_CELDA_MINADA + ID_CELDA_CUBIERTA;
     private final int CELDA_MINADA_MARCADA = CELDA_MINADA_CUBIERTA + ID_CELDA_CUBIERTA;
 
-    private final int TOTAL_MINAS = 4;
+    private final int TOTAL_MINAS = 40;
     private final int TOTAL_FILAS = 20;
     private final int TOTAL_COLUMNAS = 20;
 
@@ -34,8 +34,6 @@ public class Buscaminas extends Juego
     private final Image[] imagenes;
 
     private int totalCeldas;
-    
-    private final EventosMouse eventosMouse;
 
     public Buscaminas(Videojuego videojuego)
     {
@@ -55,8 +53,7 @@ public class Buscaminas extends Juego
         }
 
         // crear y asignar el listener de clicks de raton para las casillas del tablero
-        eventosMouse = new EventosMouse();
-        addMouseListener(eventosMouse);
+        addMouseListener(new MouseListener());
     }
 
     @Override
@@ -380,15 +377,8 @@ public class Buscaminas extends Juego
             videojuego.notificar("Perdiste");
         }
     }
-    
-    @Override
-    public void cerrar()
-    {
-        removeMouseListener(eventosMouse);
-        super.cerrar();
-    }
 
-    private class EventosMouse extends MouseAdapter {
+    private class MouseListener extends MouseAdapter {
 
         @Override
         public void mousePressed(MouseEvent e)
