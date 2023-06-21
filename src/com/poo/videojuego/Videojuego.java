@@ -115,7 +115,7 @@ public class Videojuego extends JFrame
         mostrarEnemigo(enemigo);
         
         setVisible(true);
-        this.requestFocus();
+        requestFocus();
     }
     
     public void cerrarPanelJuego()

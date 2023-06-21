@@ -3,7 +3,7 @@ package com.poo.videojuego;
 import java.awt.*;
 import javax.swing.*;
 
-public abstract class Juego extends JPanel
+public abstract class Juego extends JPanel 
 {
     protected Videojuego videojuego;
     
